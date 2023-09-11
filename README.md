@@ -1,3 +1,3 @@
-# VS Starter Kit
+# DMIT2018-E01 Demo Projects
 
-Contains basic VS git.ignore and git.attributes
+This repository contains all the demo projects presented in class.
