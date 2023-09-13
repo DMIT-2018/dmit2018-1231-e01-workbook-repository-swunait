@@ -56,10 +56,6 @@ with the example or will reference the Westwind database.  The Westwind.bacpac c
 
 <br>
 
-[Back to Exercises](../README.md)
-
-<br>
-
 ##### References
 [101 LINQ Samples](https://learn.microsoft.com/en-us/samples/dotnet/try-samples/101-linq-samples/)
 <br>
