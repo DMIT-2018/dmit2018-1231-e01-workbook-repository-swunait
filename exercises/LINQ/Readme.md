@@ -46,15 +46,13 @@ with the example or will reference the Westwind database.  The Westwind.bacpac c
 30. [Group By (Method Syntax)](./32%20-%20Group%20By.md)
 30. [Odds & Ends (Method Syntax)](./33%20-%20Odds%20and%20Ends.md)
 
-## Intermediate Queries 2 
-40. [West Wind Database - LINQ Queries with Navigation Properties - No Parameters](./West%20Wind%20Database%20-%20LINQ%20Queries%20with%20Navigation%20Properties%20-%20No%20Parameters.md)
-40. [West Wind Database - LINQ Queries with Navigation Properties and Parameters](./West%20Wind%20Database%20-%20LINQ%20Queries%20with%20Navigation%20Properties%20and%20Parameters.md)
-40. [West Wind Database - LINQ Queries with Parameters](./West%20Wind%20Database%20-%20LINQ%20Queries%20with%20Parameters.md)
-40. [West Wind Database - LINQ Review](./West%20Wind%20Database%20-%20LINQ%20Review.md)
-40. [West Wind Database - Entity Framework Methods](./West%20Wind%20Database%20-%20Entity%20Framework%20Methods.md)
-
 ## Advance Queries  
 50. [Level 50 (The Boss Level)](./50%20-%20Boss%20Level.md)
+50. [West Wind Database - LINQ Queries with Navigation Properties - No Parameters](./West%20Wind%20Database%20-%20LINQ%20Queries%20with%20Navigation%20Properties%20-%20No%20Parameters.md)
+50. [West Wind Database - LINQ Queries with Navigation Properties and Parameters](./West%20Wind%20Database%20-%20LINQ%20Queries%20with%20Navigation%20Properties%20and%20Parameters.md)
+50. [West Wind Database - LINQ Queries with Parameters](./West%20Wind%20Database%20-%20LINQ%20Queries%20with%20Parameters.md)
+50. [West Wind Database - LINQ Review](./West%20Wind%20Database%20-%20LINQ%20Review.md)
+50. [West Wind Database - Entity Framework Methods](./West%20Wind%20Database%20-%20Entity%20Framework%20Methods.md)
 
 <br>
 
