@@ -311,6 +311,6 @@ void Main()
 </details>
 </details>
 
-</br>
+<br />
 
 [Readme.md](./Readme.md)
