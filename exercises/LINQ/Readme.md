@@ -10,6 +10,9 @@ All examples beyond the first three files will only use the "Method" query.
   
 * Intermediate LINQ Queries.  
   * These queries will build on the skills you have used in the "Basic LINQ Queries" and demonstrate the LINQ language’s power.
+
+* Group By Methods
+  * These queries requires the usage of the GroupBy method. 
    
 * Advance LINQ Queries.  
   * These queries will provide a challenge for you to solve. However, you should have no problems completing them.
@@ -43,8 +46,10 @@ with the example or will reference the Westwind database.  The Westwind.bacpac c
 ## Intermediate Queries  
 30. [Nested Query (Method Syntax)](./30%20-%20Nested%20Query.md)
 30. [Queries Using Aggregate (Method Syntax)](./31%20-%20Aggregate%20Query.md)
-30. [Group By (Method Syntax)](./32%20-%20Group%20By.md)
+<!-- 30. [Group By 1(Method Syntax)](./32%20-%20Group%20By.md) -->
+30. [Group By Methods (Method Syntax)](./Group%20By%20Methods.md)
 30. [Odds & Ends (Method Syntax)](./33%20-%20Odds%20and%20Ends.md)
+
 
 ## Advance Queries  
 50. [Level 50 (The Boss Level)](./50%20-%20Boss%20Level.md)
