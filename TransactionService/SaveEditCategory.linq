@@ -63,6 +63,11 @@ public CategoryView? AddEditCategory(CategoryView categoryView)
 {
     // --- Business Logic and Parameter Exception Section ---
     #region Business Logic and Parameter Exception
+	// Throw an exception if the method parameter is null
+	if (categoryView == null) 
+	{
+		throw new Exception("catgeoryView parameter cannot be null.");	
+	}
 
     // List initialization to capture potential errors during processing.
     List<Exception> errorList = new List<Exception>();
@@ -82,28 +87,32 @@ public CategoryView? AddEditCategory(CategoryView categoryView)
     #region Method Code
 
     // Actual logic to add or edit data in the database goes here.
-	var currentCategory = Categories
+	if (errorList.Count == 0)
+	{
+		var currentCategory = Categories
 							.Where(c => c.CategoryID == categoryView.CategoryID)
 							.FirstOrDefault();
-	if (currentCategory == null)
-	{
-		currentCategory = new Categories();
+		if (currentCategory == null)
+		{
+			currentCategory = new Categories();
+		}
+
+		// Copy data from the view model to the entity class
+		currentCategory.CategoryName = categoryView.CategoryName;
+		currentCategory.Description = categoryView.Description;
+		currentCategory.Picture = categoryView.Picture;
+		currentCategory.PictureMimeType = categoryView.PictureMimeType;
+
+		// check to see if we are adding a new category
+		if (currentCategory.CategoryID == 0)
+		{
+			// add the currentCategory entity to the Categories collection
+			Categories.Add(currentCategory);
+		}
 	}
-	
-	// Copy data from the view model to the entity class
-	currentCategory.CategoryName = categoryView.CategoryName;
-	currentCategory.Description = categoryView.Description;
-	currentCategory.Picture = categoryView.Picture;
-	currentCategory.PictureMimeType = categoryView.PictureMimeType;
-	
-	// check to see if we are adding a new category
-	if (currentCategory.CategoryID == 0) 
-	{
-		// add the currentCategory entity to the Categories collection
-		Categories.Add(currentCategory);
-	}
-	
-    #endregion
+
+
+	#endregion
 
     // --- Error Handling and Database Changes Section ---
     #region Check for errors and SaveChanges

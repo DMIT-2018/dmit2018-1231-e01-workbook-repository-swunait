@@ -55,12 +55,70 @@ public InvoiceView AddEditInvoice(InvoiceView invoiceView)
 {
     // --- Business Logic and Parameter Exception Section ---
     #region Business Logic and Parameter Exception
+	
+	// Throw an exception if the method parameter invoiceView is null
+	if (invoiceView == null) 
+	{
+		throw new Exception("invoiceView parameter cannot be null.");
+	}
 
     // List initialization to capture potential errors during processing.
     List<Exception> errorList = new List<Exception>();
 
     // All business rules are placed here. 
     // They are crucial for ensuring data integrity and validation.
+	// Rule: customer id cannot be zero
+	if (invoiceView.CustomerID == 0) 
+	{
+		errorList.Add(new Exception("CustomerID is required."));
+	}
+	// Rule: EmployeeID is required
+	if (invoiceView.EmployeeID == 0)
+	{
+		errorList.Add(new Exception("EmployeeID is required."));
+	}
+	// Rule: There must be at least one invoice line
+	if (invoiceView.InvoiceLines.Count == 0) 
+	{
+		errorList.Add(new Exception("Invoice requires at least one InvoiceLine"));
+	}
+	// Rule: For each invoice line, there must be a part
+	// Rule: For each invoice line, the price cannot be less than zero
+	foreach(InvoiceLineView currentInvoiceLineView in invoiceView.InvoiceLines)
+	{
+		if (currentInvoiceLineView.PartID == 0) 
+		{
+			errorList.Add(new Exception("PartID is required."));
+		}
+		if (currentInvoiceLineView.Price < 0) 
+		{
+			string? partName = Parts
+								.Where(p => p.PartID == currentInvoiceLineView.PartID)
+								.Select(p => p.Description)
+								.FirstOrDefault();
+			if (partName != null)
+			{
+				errorList.Add(new Exception($"Part {partName} has a price that is less than zero"));
+			}
+		}
+	}
+	// Rule: Parts cannot be duplicated on more than one line
+	List<string> duplicateParts = invoiceView.InvoiceLines
+									.GroupBy(il => new {il.PartID})
+									.Where(group => group.Count() > 1)
+									//.OrderBy(group => group.Key.PartID)
+									.Select(group => Parts
+														.Where(p => p.PartID == group.Key.PartID)
+														.Select(p => p.Description)
+														.FirstOrDefault()
+									).ToList();
+	if (duplicateParts.Count > 0)
+	{
+		foreach(string partName in duplicateParts)
+		{
+			errorList.Add(new Exception($"Part {partName} can only be added to the invoice line once."));
+		}
+	}
     
     // The logic to validate incoming parameters goes here.
 
@@ -71,64 +129,90 @@ public InvoiceView AddEditInvoice(InvoiceView invoiceView)
 
     // Actual logic to add or edit data in the database goes here.
 	// Fetch from the database an existing Invoice with a matching InvoiceID from invoiceView
-	Invoice? currentInvoice = Invoices
+	Invoice? currentInvoice = null;
+	if (errorList.Count == 0)
+	{
+		currentInvoice = Invoices
 								.Where(x => x.InvoiceID == invoiceView.InvoiceID)
 								.FirstOrDefault();
-	if (currentInvoice == null)
-	{
-		// create a new Invoice 
-		currentInvoice = new Invoice();
-		// assign the current for the InoviceDate
-		currentInvoice.InvoiceDate = DateTime.Now;
-	}
-	else
-	{
-		// Update the InvoiceDate of the existing Invoice
-		currentInvoice.InvoiceDate = invoiceView.InvoiceDate;
-	}
-	// Assign the CustomerID and EmployeeID of the currentInvoice
-	currentInvoice.CustomerID = invoiceView.CustomerID;
-	currentInvoice.EmployeeID = invoiceView.EmployeeID;
-	// Reset the Subtotal and Tax to zero
-	currentInvoice.SubTotal = 0;
-	currentInvoice.Tax = 0;
-	
-	// Process each InvoiceLineView in invoiceView.InvoiceLines
-	foreach(var currentInvoiceLineView in invoiceView.InvoiceLines)
-	{
-		// Determine whether to create new InvoiceLine or update an existing InvoiceLine
-		InvoiceLine? currentInvoiceLine = InvoiceLines
-			.Where(x => x.InvoiceLineID == currentInvoiceLineView.InvoiceLineID)
-			.Where(x => x.PartID == currentInvoiceLineView.PartID)
-			.FirstOrDefault();
-		if (currentInvoiceLine == null) 
+		if (currentInvoice == null)
 		{
-			// create new InvoiceLine
-			currentInvoiceLine = new InvoiceLine();
-			// Set the PartID of the new InvoiceLine
-			currentInvoiceLine.PartID = currentInvoiceLineView.PartID;
-		}
-		// Update the Quantity, Price, RemoveFromViewFlag of the entity object
-		currentInvoiceLine.Quantity = currentInvoiceLineView.Quantity;
-		currentInvoiceLine.Price = currentInvoiceLineView.Price;
-		currentInvoiceLine.RemoveFromViewFlag = currentInvoiceLineView.RemoveFromViewFlag;
-		// Determine whether to add or update the InvoiceLine
-		if (currentInvoiceLine.InvoiceLineID == 0)
-		{
-			// add a new InvoiceLine
-			currentInvoice.InvoiceLines.Add(currentInvoiceLine);
+			// create a new Invoice 
+			currentInvoice = new Invoice();
+			// assign the current for the InoviceDate
+			currentInvoice.InvoiceDate = DateTime.Now;
 		}
 		else
 		{
-			// update existing InvoiceLine
-			InvoiceLines.Update(currentInvoiceLine);
+			// Update the InvoiceDate of the existing Invoice
+			currentInvoice.InvoiceDate = invoiceView.InvoiceDate;
 		}
-		
-	}
-	
-    #endregion
+		// Assign the CustomerID and EmployeeID of the currentInvoice
+		currentInvoice.CustomerID = invoiceView.CustomerID;
+		currentInvoice.EmployeeID = invoiceView.EmployeeID;
+		// Reset the Subtotal and Tax to zero
+		currentInvoice.SubTotal = 0;
+		currentInvoice.Tax = 0;
 
-    // --- Error Handling and Database Changes Section ---
+		// Process each InvoiceLineView in invoiceView.InvoiceLines
+		foreach (var currentInvoiceLineView in invoiceView.InvoiceLines)
+		{
+			// Determine whether to create new InvoiceLine or update an existing InvoiceLine
+			InvoiceLine? currentInvoiceLine = InvoiceLines
+				.Where(x => x.InvoiceLineID == currentInvoiceLineView.InvoiceLineID)
+				.Where(x => x.PartID == currentInvoiceLineView.PartID)
+				.FirstOrDefault();
+			if (currentInvoiceLine == null)
+			{
+				// create new InvoiceLine
+				currentInvoiceLine = new InvoiceLine();
+				// Set the PartID of the new InvoiceLine
+				currentInvoiceLine.PartID = currentInvoiceLineView.PartID;
+			}
+			// Update the Quantity, Price, RemoveFromViewFlag of the entity object
+			currentInvoiceLine.Quantity = currentInvoiceLineView.Quantity;
+			currentInvoiceLine.Price = currentInvoiceLineView.Price;
+			currentInvoiceLine.RemoveFromViewFlag = currentInvoiceLineView.RemoveFromViewFlag;
+			// Determine whether to add or update the InvoiceLine
+			if (currentInvoiceLine.InvoiceLineID == 0)
+			{
+				// add a new InvoiceLine
+				currentInvoice.InvoiceLines.Add(currentInvoiceLine);
+			}
+			else
+			{
+				// update existing InvoiceLine
+				InvoiceLines.Update(currentInvoiceLine);
+			}
+			// Need to update Total and Tax if the invoice line item
+			// is not set to be removed from view
+			if (!currentInvoice.RemoveFromViewFlag)
+			{
+				decimal extendedPrice = currentInvoiceLine.Quantity * currentInvoiceLine.Price;
+				currentInvoice.SubTotal += extendedPrice;
+				bool taxable = Parts
+								.Where(p => p.PartID == currentInvoiceLine.PartID)
+								.Select(p => p.Taxable)
+								.FirstOrDefault();
+				const decimal TaxRate = 0.05m;
+				if (taxable)
+				{
+					currentInvoice.Tax += extendedPrice * TaxRate;
+				}
+			}
+			// If it's a new invoice, add it to the Invoices collection
+			if (currentInvoice.InvoiceID == 0)
+			{
+				Invoices.Add(currentInvoice);
+			}
+
+		}
+
+	}
+
+	#endregion
+
+	// --- Error Handling and Database Changes Section ---
     #region Check for errors and SaveChanges
 
     // Check for the presence of any errors.
@@ -148,9 +232,46 @@ public InvoiceView AddEditInvoice(InvoiceView invoiceView)
 	}
 
 	// Return null; this return value may require further specification based on requirements.
-	return null;
+	return GetInvoice(currentInvoice.InvoiceID);
 
 	#endregion
+}
+
+public InvoiceView? GetInvoice(int invoiceId)
+{
+	if (invoiceId == 0) 
+	{
+		throw new Exception("InvoiceId is required.");	
+	}
+	return Invoices
+			.Where(i => i.InvoiceID == invoiceId && i.RemoveFromViewFlag == false)
+			.Select(i => new InvoiceView
+			{
+				InvoiceID = i.InvoiceID,
+				InvoiceDate = i.InvoiceDate,
+				CustomerID = i.CustomerID,
+				CustomerName = $"{i.Customer.FirstName} {i.Customer.LastName}",
+				EmployeeID = i.EmployeeID,
+				EmployeeName = $"{i.Employee.FirstName} {i.Employee.LastName}",
+				SubTotal = i.SubTotal,
+				Tax = i.Tax,
+				RemoveFromViewFlag = i.RemoveFromViewFlag,
+				InvoiceLines = InvoiceLines
+								.Where(il => il.InvoiceID == i.InvoiceID 
+										&&
+										il.RemoveFromViewFlag == false)
+								.Select(il => new InvoiceLineView
+								{
+									InvoiceLineID = il.InvoiceLineID,
+									InvoiceID = il.InvoiceID,
+									PartID = il.PartID,
+									Description = il.Part.Description,
+									Quantity = il.Quantity,
+									Price = il.Price,
+									RemoveFromViewFlag = il.RemoveFromViewFlag
+								})
+								.ToList()
+			}).FirstOrDefault();
 }
 
 #endregion
