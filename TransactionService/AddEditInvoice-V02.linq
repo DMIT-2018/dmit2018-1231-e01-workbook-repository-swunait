@@ -41,6 +41,41 @@ void Main()
 	InvoiceView afterAdd = AddEditInvoice(beforeAdd);
 	
 	afterAdd.Dump("After Add");
+
+
+	//	setup Edit Category
+	//	before action (Edit)
+	int invoiceID = Invoices
+					.OrderByDescending(x => x.InvoiceID)
+					.Select(x => x.InvoiceID).FirstOrDefault();
+	InvoiceView beforeEdit = GetInvoice(invoiceID);
+
+	//	showing results
+	beforeEdit.Dump("Before Edit");
+
+	//  change Employee
+	beforeEdit.EmployeeID = 1;
+
+	//	update the first invoice line quantity to 1
+	beforeEdit.InvoiceLines[0].Quantity = 1;
+
+	//	soft delete second line
+	beforeEdit.InvoiceLines[1].RemoveFromViewFlag = true; ;
+
+	//	add one more item
+	InvoiceLineView invoiceLine3 = new InvoiceLineView();
+	invoiceLine3.PartID = 3;
+	invoiceLine3.Description = "Exhaust system";
+	invoiceLine3.Quantity = 5;
+	invoiceLine3.Price = 400.00m;
+	beforeEdit.InvoiceLines.Add(invoiceLine3);
+
+	//	execute
+	InvoiceView afterEdit = AddEditInvoice(beforeEdit);
+
+	//	after action (Edit)
+	//	showing results
+	afterEdit.Dump("After Edit");
 }
 
 /// <summary>
@@ -90,51 +125,92 @@ public InvoiceView AddEditInvoice(InvoiceView invoiceView)
 	#region Method Code
 
 	// Actual logic to add or edit data in the database goes here.
-	// TODO Iteration 1: Add a Invoice and Add the InvoiceLine to the Invoice
-	// Create a new Invoice and copy the data from invoiceView
+	// TODO Iteration 2: Add code to update an existing invoice
 	
-	// The entity is Invoice not Invoices because the table name is Invoice instead of Invoices. 
-	//Invoices currentInvoice = new() 
-	//{
-	//	InvoiceDate = DateTime.Now,
-	//	CustomerID = invoiceView.CustomerID,
-	//	EmployeeID = invoiceView.EmployeeID,
-	//	SubTotal = 0,
-	//	Tax = 0
-	//};
-	
-	Invoice currentInvoice = new();
-	currentInvoice.InvoiceDate = DateTime.Now;
-	currentInvoice.CustomerID = invoiceView.CustomerID;
-	currentInvoice.EmployeeID = invoiceView.EmployeeID;
-	currentInvoice.SubTotal = 0;
-	currentInvoice.Tax = 0;
-	
-	// Add currentInvoice to Invoice entity
-	Invoices.Add(currentInvoice);
-	
-	// Create InvoiceLine for each InvoiceLineView
-	foreach(InvoiceLineView ilv in invoiceView.InvoiceLines)
+	// Determine if invoiceView is a new Invoice (InvoiceId == 0) or an existing Invoice (InvoiceId > 0).
+	Invoice currentInvoice;
+	if (invoiceView.InvoiceID == 0) 
 	{
-		InvoiceLine currentInvoiceLine = new();
-		currentInvoiceLine.PartID = ilv.PartID;
-		currentInvoiceLine.Quantity = ilv.Quantity;
-		currentInvoiceLine.Price = ilv.Price;
-		// add currentInvoiceLine to currentInvoice
-		currentInvoice.InvoiceLines.Add(currentInvoiceLine);
+		// create a new Invoice
+		currentInvoice = new();
+		currentInvoice.InvoiceDate = DateTime.Now;
+		currentInvoice.CustomerID = invoiceView.CustomerID;
+		currentInvoice.EmployeeID = invoiceView.EmployeeID;
 
-		//currentInvoice.SubTotal += ilv.Quantity * ilv.Price;
-		//bool isTaxable = Parts
-		//					.Where(x => x.PartID == ilv.PartID)
-		//					.Select(x => x.Taxable)
-		//					.FirstOrDefault();
-		//currentInvoice.Tax += isTaxable ? ilv.Quantity * ilv.Price * .05m : 0;
+		// Add currentInvoice to Invoice entity
+		Invoices.Add(currentInvoice);
+
+		// Create InvoiceLine for each InvoiceLineView
+		foreach (InvoiceLineView ilv in invoiceView.InvoiceLines)
+		{
+			InvoiceLine currentInvoiceLine = new();
+			currentInvoiceLine.PartID = ilv.PartID;
+			currentInvoiceLine.Quantity = ilv.Quantity;
+			currentInvoiceLine.Price = ilv.Price;
+			// add currentInvoiceLine to currentInvoice
+			currentInvoice.InvoiceLines.Add(currentInvoiceLine);
+		}
+		currentInvoice.SubTotal = invoiceView.InvoiceLines.Sum(ilv => ilv.Quantity * ilv.Price);
+		currentInvoice.Tax = invoiceView.InvoiceLines
+								.Where(ilv => Parts.Where(p => p.PartID == ilv.PartID).First().Taxable)
+								.Sum(ilv => ilv.Quantity * ilv.Price * 0.05m);
+
 	}
-	currentInvoice.SubTotal = invoiceView.InvoiceLines.Sum(ilv => ilv.Quantity * ilv.Price);
+	else
+	{
+		// update an existing Invoice
+		// Find the existing Invoice to update
+		currentInvoice = Invoices
+						.Where(i => i.InvoiceID == invoiceView.InvoiceID)
+						.FirstOrDefault();
+		if (currentInvoice == null)
+		{
+			throw new ArgumentException($"There is no invoice with InvoiceID of {invoiceView.InvoiceID}");
+		}
+		// Map attributes from the view model to the data model.
+		currentInvoice.InvoiceDate = invoiceView.InvoiceDate;
+		currentInvoice.CustomerID = invoiceView.CustomerID;
+		currentInvoice.EmployeeID = invoiceView.EmployeeID;
+
+		// Process each line item in the provided view model.
+		foreach (InvoiceLineView ilv in invoiceView.InvoiceLines)
+		{
+			// Determine if the InvoiceLineView is new or an existing one.
+			InvoiceLine currentInvoiceLine = InvoiceLines
+												.Where(il => il.InvoiceLineID == ilv.InvoiceLineID
+														&& il.PartID == ilv.PartID)
+												.FirstOrDefault();
+			if (currentInvoiceLine == null)
+			{
+				// Create a new InvoiceLine
+				currentInvoiceLine = new();
+				currentInvoiceLine.PartID = ilv.PartID;
+				currentInvoiceLine.Quantity = ilv.Quantity;
+				currentInvoiceLine.Price = ilv.Price;
+				// add a new InvoiceLine
+				currentInvoice.InvoiceLines.Add(currentInvoiceLine);
+			}
+			else 
+			{
+				// Update the property values for the existing InvoiceLine
+				currentInvoiceLine.Quantity = ilv.Quantity;
+				currentInvoiceLine.Price = ilv.Price;
+				currentInvoiceLine.RemoveFromViewFlag = ilv.RemoveFromViewFlag;
+				// update the existing InvoiceLine
+				InvoiceLines.Update(currentInvoiceLine);
+			}				
+		
+		}
+
+	}
+	// Compute new SubTotal and Tax
+	currentInvoice.SubTotal = invoiceView.InvoiceLines
+								.Where(il => ! il.RemoveFromViewFlag)
+								.Sum(ilv => ilv.Quantity * ilv.Price);
 	currentInvoice.Tax = invoiceView.InvoiceLines
+							.Where(il => ! il.RemoveFromViewFlag)
 							.Where(ilv => Parts.Where(p => p.PartID == ilv.PartID).First().Taxable)
 							.Sum(ilv => ilv.Quantity * ilv.Price * 0.05m);
-							
 
 	#endregion
 
