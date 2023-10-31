@@ -1,4 +1,5 @@
-﻿using HogWildSystem.DAL;
+﻿using HogWildSystem.BLL;
+using HogWildSystem.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +19,13 @@ namespace HogWildSystem
             // Register the HogWildContext class, which is the DbContext for your application,
             // with the service collection. This allows the DbContext to be injected into other
             // parts of your application as a dependency.
+            services.AddTransient<WorkingVersionsService>((ServiceProvider) =>
+            {
+                var context = ServiceProvider.GetRequiredService<HogWildContext>();
+                return new WorkingVersionsService(context);
+            });
+
+
 
             // The 'options' parameter is an Action<DbContextOptionsBuilder> that typically
             // configures the options for the DbContext, including specifying the database

@@ -1,0 +1,22 @@
+﻿@page "/WorkingVersions"
+
+<h3>WorkingVersions</h3>
+
+<div>
+    @if(workingVersionsView != null && workingVersionsView.VersionId > 0)
+    {
+        <label>Version ID: @workingVersionsView.VersionId</label>
+        <br />
+        <label>Major: @workingVersionsView.Major</label>
+        <br />
+        <label>Minor: @workingVersionsView.Minor</label>
+        <br />
+        <label>Revision: @workingVersionsView.Revision</label>
+        <br />
+        <label>Date: @workingVersionsView.AsOfDate</label>
+        <br />
+        <label>Comments: @workingVersionsView.comments</label>
+        <br />
+
+    }
+</div>
