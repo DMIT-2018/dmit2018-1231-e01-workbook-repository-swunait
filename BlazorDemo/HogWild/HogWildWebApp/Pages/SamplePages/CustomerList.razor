@@ -1,0 +1,68 @@
+﻿@page "/SamplePages/CustomerList"
+
+<PageTitle>Customer List</PageTitle>
+<h3>Customer List</h3>
+
+<h4>Search</h4>
+<p>
+    <label>Last Name:</label>
+    <InputText id="lastName"
+               Style="Width: 140px; background-color: lightgray"
+    @bind-Value="lastName" />
+</p>
+<p>
+    <label>Phone #:</label>
+    <InputText id="phoneNumber"
+               Style="Width: 140px; background-color: lightgray"
+    @bind-Value="phoneNumber" />
+</p>
+<MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="Search">Search</MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="New">New</MudButton>
+
+
+@if (Customers.Count == 0)
+{
+    <p><em>Please enter either a last name or phone number</em></p>
+}
+else
+{
+    <!-- This section defines a TableTemplate for displaying customer information. -->
+    <TableTemplate Items="Customers" Context="CustomerSearchView">
+        <!-- The following section defines the header row of the table. -->
+        <TableHeader>
+            <!-- Labels information in each column -->
+            <th></th> <!-- Empty column for buttons -->
+            <th></th> <!-- Empty column for buttons -->
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>City</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Total Sales</th>
+        </TableHeader>
+        <!-- The following section defines the row template for displaying customer data. -->
+        <RowTemplate>
+            @* <td>
+                <!-- Button to edit the customer's information -->
+                <button class="btn-success"
+                @onclick="() => EditCustomer(CustomerSearchView.CustomerID)">
+                    Edit
+                </button>
+            </td>
+            <td>
+                <!-- Button to create a new invoice for the customer -->
+                <button class="btn-success"
+                @onclick="() => NewInvoice(CustomerSearchView.CustomerID)">
+                    New Invoice
+                </button>
+            </td> *@
+            <!-- Display customer information in each column -->
+            <td>@CustomerSearchView.FirstName</td>
+            <td>@CustomerSearchView.LastName</td>
+            <td>@CustomerSearchView.City</td>
+            <td>@CustomerSearchView.Phone</td>
+            <td>@CustomerSearchView.Email</td>
+            <td>$@CustomerSearchView.TotalSales</td>
+        </RowTemplate>
+    </TableTemplate>
+}

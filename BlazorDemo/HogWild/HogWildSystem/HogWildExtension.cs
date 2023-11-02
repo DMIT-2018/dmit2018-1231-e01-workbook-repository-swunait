@@ -25,7 +25,11 @@ namespace HogWildSystem
                 return new WorkingVersionsService(context);
             });
 
-
+            services.AddTransient<CustomerService>((ServiceProvider) =>
+            {
+                var context = ServiceProvider.GetRequiredService<HogWildContext>();
+                return new CustomerService(context);
+            });
 
             // The 'options' parameter is an Action<DbContextOptionsBuilder> that typically
             // configures the options for the DbContext, including specifying the database

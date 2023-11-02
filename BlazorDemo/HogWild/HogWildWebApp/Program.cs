@@ -2,6 +2,8 @@ using HogWildWebApp.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
+using MudBlazor.Services;   // for AddMudServices() extension method
+
 using HogWildSystem;                    // for AddBackendDependencies extension method
 using Microsoft.EntityFrameworkCore;    // for UseSqlServer extension extension method
 
@@ -32,6 +34,8 @@ builder.Services.AddBackendDependencies(options =>
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
+
+builder.Services.AddMudServices();
 
 var app = builder.Build();
 
