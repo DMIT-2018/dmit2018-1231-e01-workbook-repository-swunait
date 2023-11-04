@@ -2,6 +2,7 @@
 using HogWildSystem.Entities;
 using HogWildSystem.ViewModels;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using PlaylistManagementSystem.Paginator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,15 @@ namespace HogWildSystem.BLL
             _hogWildContext = hogWildContext;
         }
 
-        public List<CustomerSearchView> GetCustomers(string lastName, string phone)
+        //public List<CustomerSearchView> GetCustomers(string lastName, string phone)
+        public Task<PagedResult<CustomerSearchView>> GetCustomers(
+            string lastName,
+            string phone,
+            int page,
+            int pageSize,
+            string sortColumn,
+            string direction
+            )
         {
             // Business Rules
             // These are processing rules that need to be satisfied
@@ -44,7 +53,7 @@ namespace HogWildSystem.BLL
                 phone = Guid.NewGuid().ToString();
             }
 
-            return _hogWildContext.Customers
+            return Task.FromResult(_hogWildContext.Customers
                     .Where(x => (x.LastName.Contains(lastName)
                                  || x.Phone.Contains(phone))
                                 && !x.RemoveFromViewFlag)
@@ -59,8 +68,11 @@ namespace HogWildSystem.BLL
                         StatusID = x.StatusID,
                         TotalSales = x.Invoices.Sum(x => x.SubTotal + x.Tax)
                     })
-                    .OrderBy(x => x.LastName)
-                    .ToList();
+                    //.OrderBy(x => x.LastName)
+                    //.ToList();
+                    .AsQueryable()
+                    .OrderBy(sortColumn, direction)
+                    .ToPagedResult(page, pageSize));
         }
     }
 }
