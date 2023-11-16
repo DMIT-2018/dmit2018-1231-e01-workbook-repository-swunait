@@ -16,6 +16,12 @@ namespace HogWildSystem
             this IServiceCollection services,
             Action<DbContextOptionsBuilder> options)
         {
+            // The 'options' parameter is an Action<DbContextOptionsBuilder> that typically
+            // configures the options for the DbContext, including specifying the database
+            // connection string.
+
+            services.AddDbContext<HogWildContext>(options);
+
             // Register the HogWildContext class, which is the DbContext for your application,
             // with the service collection. This allows the DbContext to be injected into other
             // parts of your application as a dependency.
@@ -31,11 +37,35 @@ namespace HogWildSystem
                 return new CustomerService(context);
             });
 
-            // The 'options' parameter is an Action<DbContextOptionsBuilder> that typically
-            // configures the options for the DbContext, including specifying the database
-            // connection string.
+            services.AddTransient<CategoryLookupService>((ServiceProvider) =>
+            {
+                //  Retrieve an instance of HogWildContext from the service provider.
+                var context = ServiceProvider.GetService<HogWildContext>();
 
-            services.AddDbContext<HogWildContext>(options);
+                // Create a new instance of CategoryLookupService,
+                //   passing the HogWildContext instance as a parameter.
+                return new CategoryLookupService(context);
+            });
+
+            services.AddTransient<InvoiceService>((ServiceProvider) =>
+            {
+                //  Retrieve an instance of HogWildContext from the service provider.
+                var context = ServiceProvider.GetService<HogWildContext>();
+
+                // Create a new instance of CategoryLookupService,
+                //   passing the HogWildContext instance as a parameter.
+                return new InvoiceService(context);
+            });
+
+            services.AddTransient<PartService>((ServiceProvider) =>
+            {
+                //  Retrieve an instance of HogWildContext from the service provider.
+                var context = ServiceProvider.GetService<HogWildContext>();
+
+                // Create a new instance of CategoryLookupService,
+                //   passing the HogWildContext instance as a parameter.
+                return new PartService(context);
+            });
         }
         
     }
