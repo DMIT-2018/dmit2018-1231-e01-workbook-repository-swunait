@@ -4,9 +4,11 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>57e77c6e-bb66-4e93-b31e-1ff1eafb86d3</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BlazorDialog" Version="2.1.0" />
     <PackageReference Include="MudBlazor" Version="6.11.0" />
   </ItemGroup>
 
